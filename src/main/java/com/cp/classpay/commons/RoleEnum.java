@@ -1,4 +1,4 @@
-package com.cp.classpay.api.commons;
+package com.cp.classpay.commons;
 
 public enum RoleEnum {
     ADMIN, USER

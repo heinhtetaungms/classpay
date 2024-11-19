@@ -1,6 +1,6 @@
 package com.cp.classpay.service.impl;
 
-import com.cp.classpay.api.commons.RoleEnum;
+import com.cp.classpay.commons.RoleEnum;
 import com.cp.classpay.api.input.auth.*;
 import com.cp.classpay.api.output.auth.UserProfileResponse;
 import com.cp.classpay.api.output.auth.VerifyOTPResponse;

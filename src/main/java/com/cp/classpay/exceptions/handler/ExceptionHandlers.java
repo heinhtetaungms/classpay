@@ -32,7 +32,7 @@ public class ExceptionHandlers {
 
 	@ExceptionHandler
 	@ResponseStatus(code = HttpStatus.FORBIDDEN)
-	public ResponseEntity<ApiResponse<String>> handle(Api_EmailOTP_Expiration_Exception e) {
+	public ResponseEntity<ApiResponse<String>> handle(Api_OTP_Expiration_Exception e) {
 		return ApiResponse.of(e.getMessage(), HttpStatus.FORBIDDEN);
 	}
 

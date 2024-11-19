@@ -1,4 +1,4 @@
-package com.cp.classpay.api.input.user;
+package com.cp.classpay.api.input.auth;
 
 import jakarta.validation.constraints.NotBlank;
 

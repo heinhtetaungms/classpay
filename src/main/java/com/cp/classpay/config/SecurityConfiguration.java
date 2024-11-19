@@ -21,14 +21,14 @@ import org.springframework.security.web.access.ExceptionTranslationFilter;
 public class SecurityConfiguration {
 
 	private static final String[] PUBLIC_ENDPOINTS = {
-			"/users/login",
-			"/users/refresh",
-			"/users/register",
-			"/users/verifyOTP",
-			"/users/resendOTP",
-			"/users/resetPasswordRequest",
-			"/users/verifyResetPasswordOTP",
-			"/users/resetPassword"
+			"/auth/generate-otp",
+			"/auth/verify-otp",
+			"/auth/resend-otp",
+			"/auth/register",
+			"/auth/login",
+			"/auth/refresh",
+			"/auth/reset-password",
+			"/auth/reset-password-confirm"
 	};
 
 	@Bean

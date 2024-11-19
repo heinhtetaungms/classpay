@@ -1,4 +1,4 @@
-package com.cp.classpay.api.output.user;
+package com.cp.classpay.api.output.auth;
 
 import com.cp.classpay.entity.User;
 

@@ -1,18 +1,18 @@
-package com.cp.classpay.api.output.user;
+package com.cp.classpay.api.output.auth;
 
 import com.cp.classpay.entity.User;
-import lombok.Getter;
-import lombok.Setter;
 
 public record UserRegistrationResponse (
      String username,
      String email,
-     String country) {
+     String country,
+     boolean isVerified) {
 
     public static UserRegistrationResponse from(User user) {
         return new UserRegistrationResponse(
                 user.getUsername(),
                 user.getEmail(),
-                user.getCountry());
+                user.getCountry(),
+                user.isVerified());
     }
 }

@@ -56,7 +56,7 @@ public class OTPServiceImpl implements OTPService {
             throw new Api_Rate_Limited_Exception("You have exceeded the number of allowed OTP resend attempts. Please try again later.");
         }
 
-        redisUtil.increment(OTP_RESENT_COUNT_PREFIX + email);
+        redisUtil.incrementBy(OTP_RESENT_COUNT_PREFIX + email);
         redisUtil.expire(OTP_RESENT_COUNT_PREFIX + email, 30, TimeUnit.MINUTES);
     }
 }

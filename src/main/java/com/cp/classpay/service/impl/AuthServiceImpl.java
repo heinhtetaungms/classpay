@@ -1,6 +1,6 @@
 package com.cp.classpay.service.impl;
 
-import com.cp.classpay.commons.RoleEnum;
+import com.cp.classpay.commons.enum_.RoleEnum;
 import com.cp.classpay.api.input.auth.*;
 import com.cp.classpay.api.output.auth.UserProfileResponse;
 import com.cp.classpay.api.output.auth.VerifyOTPResponse;
@@ -12,7 +12,7 @@ import com.cp.classpay.exceptions.ApiValidationException;
 import com.cp.classpay.exceptions.Api_OTP_Expiration_Exception;
 import com.cp.classpay.repository.RoleRepo;
 import com.cp.classpay.security.token.JwtTokenParser;
-import com.cp.classpay.security.token.TokenType;
+import com.cp.classpay.commons.enum_.TokenType;
 import com.cp.classpay.service.AuthService;
 import com.cp.classpay.service.MockEmailService;
 import com.cp.classpay.service.OTPService;

@@ -74,13 +74,13 @@ CREATE TABLE IF NOT EXISTS user_packages (
     user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE, 
     package_id INT NOT NULL REFERENCES packages(package_id) ON DELETE CASCADE, 
     remaining_credits INT NOT NULL,                          
-    status VARCHAR(50) DEFAULT 'active',                     
+    status VARCHAR(50) DEFAULT 'ACTIVE',
     expiration_date TIMESTAMPTZ,                               
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,         
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255) DEFAULT 'System',
     updated_by VARCHAR(255) DEFAULT 'System',
-	CONSTRAINT chk_status CHECK (status IN ('active', 'expired'))
+	CONSTRAINT chk_status CHECK (status IN ('ACTIVE', 'EXPIRED'))
 );
 
 -- Indexes for performance optimization
@@ -108,7 +108,8 @@ CREATE TABLE IF NOT EXISTS classes (
     country VARCHAR(100) NOT NULL,                           
     required_credits INT NOT NULL,                          
     available_slots INT NOT NULL,                        
-    class_date TIMESTAMPTZ NOT NULL,                         
+    class_start_date TIMESTAMPTZ NOT NULL,
+    class_end_date TIMESTAMPTZ NOT NULL,
     business_id INT NOT NULL REFERENCES business(business_id) ON DELETE CASCADE, 
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,         
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -119,7 +120,8 @@ CREATE TABLE IF NOT EXISTS classes (
 );
 
 -- Index for performance on class dates and country
-CREATE INDEX IF NOT EXISTS idx_classes_class_date ON classes(class_date);
+CREATE INDEX IF NOT EXISTS idx_classes_class_start_date ON classes(class_start_date);
+CREATE INDEX IF NOT EXISTS idx_classes_class_end_date ON classes(class_end_date);
 CREATE INDEX IF NOT EXISTS idx_classes_country ON classes(country);
 
 -- Bookings Table (User bookings for classes)
@@ -127,47 +129,36 @@ CREATE TABLE IF NOT EXISTS bookings (
     booking_id SERIAL PRIMARY KEY,                           
     user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     class_id INT NOT NULL REFERENCES classes(class_id) ON DELETE CASCADE,
-    user_package_id INT NOT NULL REFERENCES user_packages(user_package_id) ON DELETE CASCADE, 
-    booking_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,        
+    booking_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     cancellation_time TIMESTAMPTZ,                             
-    status VARCHAR(50) DEFAULT 'booked',                      
+    status VARCHAR(50) DEFAULT 'BOOKED',
     is_canceled BOOLEAN DEFAULT FALSE,                        
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,          
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255) DEFAULT 'System',
     updated_by VARCHAR(255) DEFAULT 'System',
-	CONSTRAINT chk_booking_status CHECK (status IN ('booked', 'canceled', 'waitlisted'))
+	CONSTRAINT chk_booking_status CHECK (status IN ('BOOKED', 'CANCELED', 'WAITLISTED'))
+);
+
+-- Bookings Detail Table
+CREATE TABLE IF NOT EXISTS bookings_detail (
+    booking_detail_id SERIAL PRIMARY KEY,
+    user_package_id INT NOT NULL REFERENCES user_packages(user_package_id) ON DELETE CASCADE,
+    booking_id INT NOT NULL REFERENCES bookings(booking_id) ON DELETE CASCADE,
+    credits_deducted INT NOT NULL
 );
 
 -- Indexes for performance on booking queries
 CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_class_id ON bookings(class_id);
-CREATE INDEX IF NOT EXISTS idx_bookings_user_package_id ON bookings(user_package_id);
 
--- Waitlists Table (For handling waitlisted users)
-CREATE TABLE IF NOT EXISTS waitlists (
-    waitlist_id SERIAL PRIMARY KEY,                          
-    user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    class_id INT NOT NULL REFERENCES classes(class_id) ON DELETE CASCADE,
-    waitlist_position INT NOT NULL,                           
-    status VARCHAR(50) DEFAULT 'waitlisted',                  
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,         
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    created_by VARCHAR(255) DEFAULT 'System',
-    updated_by VARCHAR(255) DEFAULT 'System',
-	CONSTRAINT chk_waitlist_status CHECK (status IN ('waitlisted', 'booked'))
-);
-
--- Index for performance on waitlist queries
-CREATE INDEX IF NOT EXISTS idx_waitlists_user_id ON waitlists(user_id);
-CREATE INDEX IF NOT EXISTS idx_waitlists_class_id ON waitlists(class_id);
 
 -- Refunds Table (For tracking user refunds)
 CREATE TABLE IF NOT EXISTS refunds (
     refund_id SERIAL PRIMARY KEY,                            
     user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE, 
-    user_package_id INT NOT NULL REFERENCES user_packages(user_package_id) ON DELETE CASCADE, 
-    amount_refunded DECIMAL(10, 2) NOT NULL,                   
+    user_package_id INT NOT NULL REFERENCES user_packages(user_package_id) ON DELETE CASCADE,
+    credit_refunded INT NOT NULL,
     refund_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,       
     reason VARCHAR(255),                                     
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,          
@@ -185,13 +176,13 @@ CREATE TABLE IF NOT EXISTS payments (
     payment_id SERIAL PRIMARY KEY,                           
     user_id INT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     amount DECIMAL(10, 2) NOT NULL,                           
-    status VARCHAR(50) DEFAULT 'completed',                   
+    status VARCHAR(50) DEFAULT 'COMPLETED',
     payment_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,       
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,         
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     created_by VARCHAR(255) DEFAULT 'System',
     updated_by VARCHAR(255) DEFAULT 'System',
-	CONSTRAINT chk_payment_status CHECK (status IN ('completed', 'failed'))
+	CONSTRAINT chk_payment_status CHECK (status IN ('COMPLETED', 'FAILED'))
 );
 
 -- Index for performance on payment queries

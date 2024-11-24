@@ -4,6 +4,7 @@ package com.cp.classpay.security.token;
 import com.cp.classpay.api.input.auth.TokenRefreshForm;
 import com.cp.classpay.api.input.auth.TokenRequestForm;
 import com.cp.classpay.api.output.auth.TokenResponse;
+import com.cp.classpay.commons.enum_.TokenType;
 import com.cp.classpay.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;

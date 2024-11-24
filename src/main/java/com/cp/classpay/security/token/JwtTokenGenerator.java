@@ -1,5 +1,6 @@
 package com.cp.classpay.security.token;
 
+import com.cp.classpay.commons.enum_.TokenType;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;

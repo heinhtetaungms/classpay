@@ -1,5 +1,6 @@
 package com.cp.classpay.security.token;
 
+import com.cp.classpay.commons.enum_.TokenType;
 import com.cp.classpay.exceptions.*;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

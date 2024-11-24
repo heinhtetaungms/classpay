@@ -1,8 +1,13 @@
 package com.cp.classpay.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.redis.lettucemod.api.sync.RedisJSONCommands;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
@@ -14,11 +19,17 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfiguration {
 
+    @Value("${spring.data.redis.host}")
+    private String redisHost;
+
+    @Value("${spring.data.redis.port}")
+    private int redisPort;
+
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
-        config.setHostName("localhost");
-        config.setPort(6379);
+        config.setHostName(redisHost);
+        config.setPort(redisPort);
         return new LettuceConnectionFactory(config);
     }
 
@@ -29,6 +40,10 @@ public class RedisConfiguration {
 
         // Configure JSON serialization for Redis values
         ObjectMapper mapper = new ObjectMapper();
+
+        // Register JavaTimeModule to handle Java 8 date/time types
+        mapper.registerModule(new JavaTimeModule());
+
         mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         Jackson2JsonRedisSerializer serializer = new Jackson2JsonRedisSerializer<>(mapper, Object.class);
 
@@ -37,8 +52,6 @@ public class RedisConfiguration {
         template.setValueSerializer(serializer);
         template.setHashKeySerializer(new StringRedisSerializer());
         template.setHashValueSerializer(serializer);
-
-        template.afterPropertiesSet();
         return template;
     }
 }

@@ -21,7 +21,7 @@ public class ApiResponse<T> {
     private String message;
     private T data;
 
-    public ApiResponse(HttpStatus httpStatus, T data) {
+    public ApiResponse(T data, HttpStatus httpStatus) {
         this.timeStamp = new Date();
         this.statusCode = httpStatus.value();
         this.httpStatus = httpStatus;
@@ -29,8 +29,13 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
+    public static <T> ResponseEntity<ApiResponse<T>> of(T data) {
+        ApiResponse<T> body = new ApiResponse<>(data, HttpStatus.OK);
+        return new ResponseEntity<>(body, HttpStatus.OK);
+    }
+
     public static <T> ResponseEntity<ApiResponse<T>> of(T data, HttpStatus httpStatus) {
-        ApiResponse<T> body = new ApiResponse<>(httpStatus, data);
+        ApiResponse<T> body = new ApiResponse<>(data, httpStatus);
         return new ResponseEntity<>(body, httpStatus);
     }
 

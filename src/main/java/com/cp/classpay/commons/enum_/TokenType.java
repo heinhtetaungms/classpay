@@ -1,4 +1,4 @@
-package com.cp.classpay.security.token;
+package com.cp.classpay.commons.enum_;
 
 public enum TokenType {
 

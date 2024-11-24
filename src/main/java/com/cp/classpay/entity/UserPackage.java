@@ -1,5 +1,6 @@
 package com.cp.classpay.entity;
 
+import com.cp.classpay.commons.enum_.PackageStatus;
 import com.cp.classpay.utils.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -25,7 +26,14 @@ public class UserPackage extends AuditableEntity {
     private Package packageEntity;
 
     private int remainingCredits;
-    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private PackageStatus status;
 
     private ZonedDateTime expirationDate;
+
+    @PrePersist
+    private void setExpirationDate() {
+        expirationDate = ZonedDateTime.now().plusDays(packageEntity.getExpiryDays());
+    }
 }

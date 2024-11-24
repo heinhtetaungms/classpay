@@ -1,11 +1,13 @@
 package com.cp.classpay.security.token;
 
+import com.cp.classpay.commons.enum_.TokenType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -21,9 +23,11 @@ public class JwtTokenFilter extends OncePerRequestFilter{
 
 		var jwtToken = request.getHeader("Authorization");
 
-		var authentication = jwtTokenParser.parse(TokenType.Access, jwtToken);
+		if(StringUtils.hasLength(jwtToken) && jwtToken.startsWith("Bearer ")) {
+			var authentication = jwtTokenParser.parse(TokenType.Access, jwtToken);
 
-		SecurityContextHolder.getContext().setAuthentication(authentication);
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+		}
 
 		filterChain.doFilter(request, response);
 	}

@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "packages")
@@ -18,11 +17,11 @@ public class Package extends AuditableEntity {
     private Long packageId;
 
     private String packageName;
-    private Integer totalCredits;
+    private int totalCredits;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
-    private Integer expiryDays;
+    private int expiryDays;
     private String country;
 }

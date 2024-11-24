@@ -25,8 +25,7 @@ public class Refund extends AuditableEntity {
     @JoinColumn(name = "user_package_id", nullable = false)
     private UserPackage userPackage;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal amountRefunded;
+    private int creditRefunded;
 
     private String reason;
 

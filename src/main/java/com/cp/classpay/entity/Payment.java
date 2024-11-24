@@ -1,5 +1,6 @@
 package com.cp.classpay.entity;
 
+import com.cp.classpay.commons.enum_.PaymentStatus;
 import com.cp.classpay.utils.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,7 +25,8 @@ public class Payment extends AuditableEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
 
     @Column(nullable = false)
     private ZonedDateTime paymentTime;

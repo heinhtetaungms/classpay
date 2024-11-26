@@ -3,87 +3,100 @@ package com.cp.classpay.service.cache;
 import com.cp.classpay.entity.Class;
 import com.cp.classpay.repository.ClassRepo;
 import com.cp.classpay.utils.RedisUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassCacheService {
 
-    @Autowired
-    private RedisUtil redisUtil;
-    @Autowired
-    private ClassRepo classRepo;
+    private final ClassRepo classRepo;
+    private final RedisUtil redisUtil;
 
-    private static final String CLASS_CACHE_KEY_PREFIX = "class:";
-    private static final String AVAILABLE_CLASS_CACHE_KEY_PREFIX = "available_class:";
+    public ClassCacheService(ClassRepo classRepo, RedisUtil redisUtil) {
+        this.classRepo = classRepo;
+        this.redisUtil = redisUtil;
+    }
+
+    @Value("${app.redis.class_e.key_prefix}")
+    private String class_e_key_prefix;
+    @Value("${app.redis.class_e.key_ttl}")
+    private long class_e_key_ttl;
+
+    @Value("${app.redis.class_l.key_prefix}")
+    private String class_l_key_prefix;
+    @Value("${app.redis.class_l.key_ttl}")
+    private long class_l_key_ttl;
 
     public Set<Long> classesEndingAroundNow() {
         Set<Long> classesEndingAroundNow = redisUtil.getClassesEndingAroundNow(60);
         return classesEndingAroundNow;
     }
 
-    public Class saveClass(Class clazz) {
-        Class savedClass = classRepo.save(clazz);
+    public Class save(Class clazz) {
+        Class record = classRepo.save(clazz);
 
-        redisUtil.saveClassEndDate(savedClass.getClassId(), savedClass.getClassEndDate());
-        cacheClassEntity(savedClass);
+        String key = class_e_key_prefix + record.getClassId();
+        set(key, record);
 
-        updateCacheForAvailableClassesByCountry(savedClass.getCountry());
-        return savedClass;
+        zSetAddForClassEndDate(record);
+
+        update_available_class_list_by_country(record);
+
+        return record;
     }
 
-    public Optional<Class> getClassEntity(Long classId) {
-        String cacheKey = CLASS_CACHE_KEY_PREFIX + classId;
-        Class cachedClass = redisUtil.getHash(cacheKey, Class.class);
+    public Class findById(Long classId) {
+        String key = class_e_key_prefix + classId;
+        Class record = redisUtil.getHash(key, Class.class);
 
-        if (cachedClass == null) {
-            cachedClass = classRepo.findById(classId).orElseThrow(RuntimeException::new);
-            cacheClassEntity(cachedClass);
+        if (record == null) {
+            record = classRepo.findByClassId(classId);
+            set(key, record);
         }
-        return Optional.ofNullable(cachedClass);
+        return record;
     }
 
-    private void cacheClassEntity(Class classEntity) {
-        String cacheKey = CLASS_CACHE_KEY_PREFIX + classEntity.getClassId();
-        redisUtil.setHash(cacheKey, classEntity, 1, TimeUnit.HOURS);
-    }
+    public List<Class> findAllByCountry(String classCountry) {
+        String key = class_l_key_prefix + classCountry;
+        List<Class> recordList = redisUtil.getList(key, Class.class);
 
-    public void updateCacheClassEntity(Class classEntity) {
-        String cacheKey = CLASS_CACHE_KEY_PREFIX + classEntity.getClassId();
-        redisUtil.delete(cacheKey);
-        redisUtil.setHash(cacheKey, classEntity, 1, TimeUnit.HOURS);
-    }
-
-    public List<Class> updateCacheForAvailableClassesByCountry(String classCountry) {
-        String cacheKey = AVAILABLE_CLASS_CACHE_KEY_PREFIX + classCountry;
-        redisUtil.delete(cacheKey);
-        List<Class> updatedClasses = classRepo.findAllByCountry(classCountry);
-        cacheAvailableClasses(cacheKey, updatedClasses);
-        return updatedClasses;
-    }
-
-    public List<Class> getAvailableClassesByCountry(String classCountry) {
-        String cacheKey = AVAILABLE_CLASS_CACHE_KEY_PREFIX + classCountry;
-
-        List<Class> cachedClasses = redisUtil.getList(cacheKey, Class.class);
-
-        if (cachedClasses == null || cachedClasses.isEmpty()) {
-            cachedClasses = classRepo.findAllByCountry(classCountry);
-            cacheAvailableClasses(cacheKey, cachedClasses);
+        if (recordList.isEmpty()) {
+            recordList = classRepo.findAllByCountry(classCountry);
+            setList(key, recordList);
         }
-
-        return cachedClasses;
+        return recordList;
     }
 
-    private void cacheAvailableClasses(String cacheKey, List<Class> classList) {
-        redisUtil.delete(cacheKey);
-        redisUtil.setList(cacheKey, classList, 1, TimeUnit.HOURS);
+    private List<Class> update_available_class_list_by_country(Class clazz) {
+        String key = class_l_key_prefix + clazz.getCountry();
+        List<Class> recordList = redisUtil.getList(key, Class.class);
+
+        if (recordList.isEmpty()) {
+            //will invoke db hit only once to consistence with db if redis key is deleted
+            recordList = classRepo.findAllByCountry(clazz.getCountry());
+        }
+        List<Class> updatedList = recordList.stream().filter(record -> !record.getClassId().equals(clazz.getClassId())).collect(Collectors.toList());
+
+        updatedList.add(clazz);
+        setList(key, updatedList);
+
+        return updatedList;
     }
 
+    private void set(String key, Class classEntity) {
+        redisUtil.setHash(key, classEntity, class_e_key_ttl, TimeUnit.MINUTES);
+    }
+
+    private void setList(String key, List<Class> classList) {
+        redisUtil.setList(key, classList, class_l_key_ttl, TimeUnit.MINUTES);
+    }
+
+    private void zSetAddForClassEndDate(Class clazz) {
+        redisUtil.saveClassEndDate(clazz.getClassId(), clazz.getClassEndDate());
+    }
 }

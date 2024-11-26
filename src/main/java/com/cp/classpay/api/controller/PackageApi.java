@@ -1,12 +1,13 @@
 package com.cp.classpay.api.controller;
 
+import com.cp.classpay.api.input.package_.PackageRegisterRequest;
 import com.cp.classpay.api.input.package_.PurchasePackageRequest;
+import com.cp.classpay.api.output.package_.PackageRegisterResponse;
 import com.cp.classpay.api.output.package_.PackageResponse;
 import com.cp.classpay.api.output.package_.PurchasePackageResponse;
 import com.cp.classpay.api.output.package_.UserPackageResponse;
 import com.cp.classpay.service.PackageService;
 import com.cp.classpay.utils.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -17,8 +18,18 @@ import java.util.List;
 @RestController
 @RequestMapping("/packages")
 public class PackageApi {
-    @Autowired
-    private PackageService packageService;
+
+    private final PackageService packageService;
+
+    public PackageApi(PackageService packageService) {
+        this.packageService = packageService;
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponse<PackageRegisterResponse>> registerPackage(@Validated @RequestBody PackageRegisterRequest packageRegisterRequest, BindingResult result) {
+        PackageRegisterResponse packageRegisterResponse = packageService.registerPackage(packageRegisterRequest);
+        return ApiResponse.of(packageRegisterResponse);
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<PackageResponse>>> getAvailablePackages(@RequestParam String country) {
@@ -32,9 +43,9 @@ public class PackageApi {
         return ApiResponse.of(purchasePackageResponse);
     }
 
-    @GetMapping("/users/{userId}/purchased")
-    public ResponseEntity<ApiResponse<List<UserPackageResponse>>> getUserPurchasedPackages(@PathVariable Long userId) {
-        List<UserPackageResponse> userPurchasedPackages = packageService.getUserPackages(userId);
+    @GetMapping("/purchased-packages")
+    public ResponseEntity<ApiResponse<List<UserPackageResponse>>> getUserPurchasedPackages(@RequestParam Long userId, @RequestParam String country) {
+        List<UserPackageResponse> userPurchasedPackages = packageService.getPurchasedPackagesByUserIdAndCountry(userId, country);
         return ApiResponse.of(userPurchasedPackages);
     }
 }

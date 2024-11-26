@@ -3,8 +3,7 @@ package com.cp.classpay.security;
 
 import com.cp.classpay.entity.Role;
 import com.cp.classpay.entity.User;
-import com.cp.classpay.repository.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.cp.classpay.service.cache.UserCacheService;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,15 +18,17 @@ import java.util.Set;
 
 @Service
 public class AppUserDetailsService implements UserDetailsService{
-	
-	@Autowired
-	private UserRepo userRepo;
 
-	@Override
+	private final UserCacheService userCacheService;
+
+    public AppUserDetailsService(UserCacheService userCacheService) {
+        this.userCacheService = userCacheService;
+    }
+
+    @Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-		User user = userRepo.findByEmail(email)
-							.orElseThrow(() -> new UsernameNotFoundException("Invalid login id."));
+		User user = userCacheService.findByEmail(email);
 
 		return org.springframework.security.core.userdetails.User
 				.builder()
@@ -42,7 +43,7 @@ public class AppUserDetailsService implements UserDetailsService{
 	}
 
 
-	public Collection<? extends GrantedAuthority> getAuthorities(User user) {
+	public Collection<GrantedAuthority> getAuthorities(User user) {
 		Set<GrantedAuthority> authorities = new HashSet<>();
 
 		authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRoles().stream()
@@ -50,11 +51,11 @@ public class AppUserDetailsService implements UserDetailsService{
 				.findFirst()
 				.orElseThrow(() ->new UsernameNotFoundException("User has no roles."))));
 
-		user.getRoles().forEach(role -> {
-			role.getPermissions().forEach(permission -> {
-				authorities.add(new SimpleGrantedAuthority("PERMISSION_" + permission.getName()));
-			});
-		});
+		user.getRoles().forEach(role ->
+			role.getPermissions().forEach(permission ->
+				authorities.add(new SimpleGrantedAuthority("PERMISSION_" + permission.getName()))
+			)
+		);
 
 		return authorities;
 	}

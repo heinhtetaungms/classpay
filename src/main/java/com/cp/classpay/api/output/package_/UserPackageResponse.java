@@ -14,7 +14,7 @@ public record UserPackageResponse(
         boolean isExpired,
         ZonedDateTime expirationDate
 ) {
-    public static UserPackageResponse toUserPackageResponse(UserPackage userPackage) {
+    public static UserPackageResponse from(UserPackage userPackage) {
         return new UserPackageResponse(
                 userPackage.getPackageEntity().getPackageId(),
                 userPackage.getPackageEntity().getPackageName(),

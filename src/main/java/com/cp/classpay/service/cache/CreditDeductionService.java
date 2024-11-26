@@ -93,8 +93,8 @@ public class CreditDeductionService {
     }
 
     public void updateCacheAfterDeduct(User user, Class classEntity) {
-        classCacheService.updateCacheClassEntity(classEntity);
-        classCacheService.updateCacheForAvailableClassesByCountry(classEntity.getCountry());
-        userPackageCacheService.updateCacheForUserPackagesByCountry(user.getUserId(), user.getCountry());
+        //classCacheService.updateCacheClassEntity(classEntity);
+        //classCacheService.updateCacheForAvailableClassesByCountry(classEntity.getCountry());
+        //userPackageCacheService.updateCacheForUserPackagesByCountry(user.getUserId(), user.getCountry());
     }
 }

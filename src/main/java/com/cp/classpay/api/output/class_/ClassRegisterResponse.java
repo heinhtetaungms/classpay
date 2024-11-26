@@ -4,7 +4,7 @@ import com.cp.classpay.entity.Class;
 
 import java.time.ZonedDateTime;
 
-public record ClassRegistrationResponse(
+public record ClassRegisterResponse(
         Long classId,
         String className,
         String country,
@@ -13,8 +13,8 @@ public record ClassRegistrationResponse(
         ZonedDateTime classDate,
         String businessName
 ) {
-        public static ClassRegistrationResponse toClassRegistrationResponse(Class classEntity) {
-                return new ClassRegistrationResponse(
+        public static ClassRegisterResponse from(Class classEntity) {
+                return new ClassRegisterResponse(
                         classEntity.getClassId(),
                         classEntity.getClassName(),
                         classEntity.getCountry(),

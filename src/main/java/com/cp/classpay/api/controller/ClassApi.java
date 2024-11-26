@@ -1,11 +1,10 @@
 package com.cp.classpay.api.controller;
 
-import com.cp.classpay.api.input.class_.ClassRegistrationRequest;
-import com.cp.classpay.api.output.class_.ClassRegistrationResponse;
+import com.cp.classpay.api.input.class_.ClassRegisterRequest;
+import com.cp.classpay.api.output.class_.ClassRegisterResponse;
 import com.cp.classpay.api.output.class_.ClassResponse;
 import com.cp.classpay.service.ClassService;
 import com.cp.classpay.utils.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -16,13 +15,17 @@ import java.util.List;
 @RestController
 @RequestMapping("/classes")
 public class ClassApi {
-    @Autowired
-    private ClassService classService;
+
+    private final ClassService classService;
+
+    public ClassApi(ClassService classService) {
+        this.classService = classService;
+    }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ClassRegistrationResponse>> registerClass(@Validated @RequestBody ClassRegistrationRequest classRegistrationRequest, BindingResult result) {
-        ClassRegistrationResponse classRegistrationResponse = classService.registerClass(classRegistrationRequest);
-        return ApiResponse.of(classRegistrationResponse);
+    public ResponseEntity<ApiResponse<ClassRegisterResponse>> registerClass(@Validated @RequestBody ClassRegisterRequest classRegisterRequest, BindingResult result) {
+        ClassRegisterResponse classRegisterResponse = classService.registerClass(classRegisterRequest);
+        return ApiResponse.of(classRegisterResponse);
     }
 
     @GetMapping
@@ -30,5 +33,4 @@ public class ClassApi {
         List<ClassResponse> availableClassesByCountry = classService.getAvailableClassesByCountry(country);
         return ApiResponse.of(availableClassesByCountry);
     }
-
 }

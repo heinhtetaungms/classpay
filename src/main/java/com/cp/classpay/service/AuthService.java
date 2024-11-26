@@ -9,7 +9,7 @@ public interface AuthService {
     void generateOTP(GenerateOTPRequest generateOTPRequest);
     VerifyOTPResponse verifyOTP(VerifyOTPRequest verifyOTPRequest);
     void resendOTP(ResendOTPRequest resendOTPRequest);
-    UserRegistrationResponse register(UserRegistrationRequest userRegistrationRequest);
+    UserRegistrationResponse registerUser(UserRegistrationRequest userRegistrationRequest);
     UserProfileResponse getProfile(String jwtToken);
     UserProfileResponse changePassword(String jwtToken, ChangePasswordRequest changePasswordRequest);
     void resetPassword(ResetPasswordRequest resetPasswordRequest);

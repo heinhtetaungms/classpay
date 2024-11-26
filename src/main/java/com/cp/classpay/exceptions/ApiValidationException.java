@@ -6,7 +6,7 @@ public class ApiValidationException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	private List<String> messages;
+	private final List<String> messages;
 
 	public ApiValidationException(List<String> messages) {
 		super();

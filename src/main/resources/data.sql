@@ -9,9 +9,7 @@ INSERT INTO roles (name) VALUES ('USER');
 
 -- Insert sample Permissions
 INSERT INTO permissions (name) VALUES ('MANAGE_PACKAGES');
-INSERT INTO permissions (name) VALUES ('MANAGE_SCHEDULES');
-INSERT INTO permissions (name) VALUES ('VIEW_ALL_BOOKINGS');
-INSERT INTO permissions (name) VALUES ('MANAGE_WAITLIST');
+INSERT INTO permissions (name) VALUES ('MANAGE_CLASSES');
 
 
 -- Assign roles to users
@@ -20,8 +18,6 @@ INSERT INTO user_roles (user_id, role_id) VALUES (2, 2);
 
 INSERT INTO role_permissions (role_id, permission_id) VALUES (1, 1);
 INSERT INTO role_permissions (role_id, permission_id) VALUES (1, 2);
-INSERT INTO role_permissions (role_id, permission_id) VALUES (1, 3);
-INSERT INTO role_permissions (role_id, permission_id) VALUES (1, 4);
 
 -- Inserting Packages
 INSERT INTO packages (package_name, total_credits, price, expiry_days, country) VALUES

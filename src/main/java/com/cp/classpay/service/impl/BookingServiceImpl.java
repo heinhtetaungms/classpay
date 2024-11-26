@@ -21,20 +21,20 @@ public class BookingServiceImpl implements BookingService {
     private BookingCacheService bookingCacheService;
 
     @Override
-    public List<BookingConfirmedClassesResponse> bookingConfirmedClasses(String jwtToken) {
-        return bookingCacheService.bookingConfirmedClasses(jwtToken);
+    public List<BookingConfirmedClassesResponse> bookingConfirmedClasses() {
+        return bookingCacheService.bookingConfirmedClasses();
     }
 
     @Override
-    public BookingResponse bookingClass(String jwtToken, BookingClassRequest bookingClassRequest) {
-        BookingStatus status = bookingCacheService.bookingClass(jwtToken, bookingClassRequest);
-        return BookingResponse.toBookingResponse(status);
+    public BookingResponse bookingClass(BookingClassRequest bookingClassRequest) {
+        BookingStatus status = bookingCacheService.bookingClass(bookingClassRequest);
+        return BookingResponse.from(status);
     }
 
     @Override
-    public CancelBookingResponse cancelBooking(String jwtToken, CancelBookingRequest cancelBookingRequest) {
-        Booking booking = bookingCacheService.cancelBooking(jwtToken, cancelBookingRequest);
-        return CancelBookingResponse.toCancelBookingResponse(booking);
+    public CancelBookingResponse cancelBooking(CancelBookingRequest cancelBookingRequest) {
+        Booking booking = bookingCacheService.cancelBooking(cancelBookingRequest);
+        return CancelBookingResponse.from(booking);
     }
 
 }

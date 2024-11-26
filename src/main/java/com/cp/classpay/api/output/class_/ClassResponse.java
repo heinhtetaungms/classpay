@@ -13,7 +13,7 @@ public record ClassResponse(
         ZonedDateTime classDate,
         String businessName
 ) {
-    public static ClassResponse toClassResponse(Class classEntity) {
+    public static ClassResponse from(Class classEntity) {
         return new ClassResponse(
                 classEntity.getClassId(),
                 classEntity.getClassName(),

@@ -2,8 +2,7 @@ package com.cp.classpay.entity;
 
 import com.cp.classpay.utils.AuditableEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -11,6 +10,9 @@ import java.math.BigDecimal;
 @Table(name = "packages")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Package extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

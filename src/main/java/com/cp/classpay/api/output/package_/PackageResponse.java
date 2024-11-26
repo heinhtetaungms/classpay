@@ -12,7 +12,7 @@ public record PackageResponse(
         int expiryDays,
         String country
 ) {
-    public static PackageResponse toPackageResponse(Package packageEntity) {
+    public static PackageResponse from(Package packageEntity) {
         return new PackageResponse(
                 packageEntity.getPackageId(),
                 packageEntity.getPackageName(),

@@ -6,7 +6,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+
 @Repository
 public interface UserRepo extends JpaRepository<User, Long> {
-    Optional<User> findByEmail(String email);
+    Optional<User> findUserByEmail(String email);
+    default User findByEmail(String email) {
+        return findUserByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found by email: " + email));
+    }
 }

@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.ZonedDateTime;
 
-public record ClassRegistrationRequest(
+public record ClassRegisterRequest(
         @NotBlank(message = "Please enter class name.")
         String className,
         @NotBlank(message = "Please enter country.")

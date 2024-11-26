@@ -8,7 +8,6 @@ import com.cp.classpay.api.output.auth.UserRegistrationResponse;
 import com.cp.classpay.security.token.TokenManagementService;
 import com.cp.classpay.service.AuthService;
 import com.cp.classpay.utils.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -17,10 +16,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 public class AuthApi {
-    @Autowired
-    private AuthService authService;
-    @Autowired
-    private TokenManagementService tokenService;
+
+    private final AuthService authService;
+    private final TokenManagementService tokenService;
+
+    public AuthApi(AuthService authService, TokenManagementService tokenService) {
+        this.authService = authService;
+        this.tokenService = tokenService;
+    }
+
     @PostMapping("/generate-otp")
     public ResponseEntity<ApiResponse<String>> generateOTP(@Validated @RequestBody GenerateOTPRequest request, BindingResult result) {
         authService.generateOTP(request);
@@ -43,7 +47,7 @@ public class AuthApi {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserRegistrationResponse>> register(@Validated @RequestBody UserRegistrationRequest userRegistrationRequest, BindingResult result) {
-        UserRegistrationResponse userRegistrationResponse = authService.register(userRegistrationRequest);
+        UserRegistrationResponse userRegistrationResponse = authService.registerUser(userRegistrationRequest);
         return ApiResponse.of(userRegistrationResponse);
     }
 

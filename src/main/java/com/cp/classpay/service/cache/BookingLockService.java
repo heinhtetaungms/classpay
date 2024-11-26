@@ -2,15 +2,18 @@ package com.cp.classpay.service.cache;
 
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class BookingLockService {
-    @Autowired
-    private RedissonClient redissonClient;
+
+    private final RedissonClient redissonClient;
+
+    public BookingLockService(RedissonClient redissonClient) {
+        this.redissonClient = redissonClient;
+    }
 
     public boolean lockForBooking(Long userId, Long classId) {
         RLock lock = redissonClient.getLock("booking_lock:" + userId + ":" + classId);

@@ -32,13 +32,13 @@ public class ExceptionHandlers {
 
 	@ExceptionHandler
 	@ResponseStatus(code = HttpStatus.FORBIDDEN)
-	public ResponseEntity<ApiResponse<String>> handle(Api_OTP_Expiration_Exception e) {
+	public ResponseEntity<ApiResponse<String>> handle(ApiOTPExpirationException e) {
 		return ApiResponse.of(e.getMessage(), HttpStatus.FORBIDDEN);
 	}
 
 	@ExceptionHandler
 	@ResponseStatus(code = HttpStatus.FORBIDDEN)
-	public ResponseEntity<ApiResponse<String>> handle(Api_Rate_Limited_Exception e) {
+	public ResponseEntity<ApiResponse<String>> handle(ApiRateLimitedException e) {
 		return ApiResponse.of(e.getMessage(), HttpStatus.FORBIDDEN);
 	}
 

@@ -7,7 +7,6 @@ import com.cp.classpay.api.output.booking.BookingConfirmedClassesResponse;
 import com.cp.classpay.commons.enum_.BookingStatus;
 import com.cp.classpay.entity.*;
 import com.cp.classpay.entity.Class;
-import com.cp.classpay.exceptions.ApiBusinessException;
 import com.cp.classpay.exceptions.BookingConcurrencyException;
 import com.cp.classpay.exceptions.InsufficientCreditsException;
 import com.cp.classpay.repository.*;
@@ -44,20 +43,20 @@ public class BookingCacheService {
     @Autowired
     private UserPackageRepo userPackageRepo;
 
-    public List<BookingConfirmedClassesResponse> bookingConfirmedClasses(String jwtToken) {
-        User user = userCacheService.getUser(jwtToken);
+    public List<BookingConfirmedClassesResponse> bookingConfirmedClasses() {
+        User user = userCacheService.getUser();
         List<Booking> bookingList = bookingRepo.findAllByUser_UserIdAndStatus(user.getUserId(), BookingStatus.BOOKED);
         return bookingList.stream()
-                .map(data -> BookingConfirmedClassesResponse.toBookingResponse(data))
+                .map(BookingConfirmedClassesResponse::from)
                 .toList();
     }
 
-    public BookingStatus bookingClass(String jwtToken, BookingClassRequest bookingClassRequest) {
-        User user = userCacheService.getUser(jwtToken);
+    public BookingStatus bookingClass(BookingClassRequest bookingClassRequest) {
+        User user = userCacheService.getUser();
         log.info("Booking class for user {} with request: {}", user.getUserId(), bookingClassRequest);
 
         // Fetch the class to be booked
-        Class classEntity = classCacheService.getClassEntity(bookingClassRequest.classId()).orElseThrow(() -> new ApiBusinessException("Class not found"));
+        Class classEntity = classCacheService.findById(bookingClassRequest.classId());
         log.debug("Fetched class entity for class ID {}", bookingClassRequest.classId());
 
         Booking booking = processBooking(user, classEntity, bookingClassRequest.waitlistPrefer());
@@ -72,7 +71,7 @@ public class BookingCacheService {
         }
 
         log.info("Attempting normal booking for user {} on class {}", user.getUserId(), classEntity.getClassId());
-        List<UserPackage> userPackages = userPackageCacheService.getUserPackagesByCountry(user.getUserId(), user.getCountry());
+        List<UserPackage> userPackages = userPackageCacheService.findUserPackagesByUserIdAndCountry(user.getUserId(), user.getCountry());
 
         // Validate sufficient credits
         int totalAvailableCredits = userPackages.stream().mapToInt(UserPackage::getRemainingCredits).sum();
@@ -101,8 +100,8 @@ public class BookingCacheService {
     }
 
     @Transactional
-    public Booking cancelBooking(String jwtToken, CancelBookingRequest cancelBookingRequest) {
-        User user = userCacheService.getUser(jwtToken);
+    public Booking cancelBooking(CancelBookingRequest cancelBookingRequest) {
+        User user = userCacheService.getUser();
         log.info("Cancelling booking for user {} with request: {}", user.getUserId(), cancelBookingRequest);
 
         Booking booking = bookingRepo.findById(cancelBookingRequest.bookingId())
@@ -152,7 +151,7 @@ public class BookingCacheService {
             log.info("Class {} available slots: {}", classEntity.getClassId(), classEntity.getAvailableSlots());
             WaitlistEntry waitlistEntry = getFromWaitlistUserToBooked(classEntity);
             if (waitlistEntry == null) break;
-            User candidate = userCacheService.getUser(waitlistEntry.getUserId());
+            User candidate = userCacheService.getUser(waitlistEntry.getEmail());
             processBooking(candidate, classEntity, false);
         }
 
@@ -162,5 +161,4 @@ public class BookingCacheService {
     private WaitlistEntry getFromWaitlistUserToBooked(Class classEntity) {
         return waitlistCacheService.getFromWaitlist(classEntity.getClassId());
     }
-
 }

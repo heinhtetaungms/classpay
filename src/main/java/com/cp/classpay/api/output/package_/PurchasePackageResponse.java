@@ -14,7 +14,7 @@ public record PurchasePackageResponse(
         boolean isExpired,
         ZonedDateTime expirationDate
 ) {
-    public static PurchasePackageResponse toPurchasePackageResponse(UserPackage userPackage) {
+    public static PurchasePackageResponse from(UserPackage userPackage) {
         return new PurchasePackageResponse(
                 userPackage.getPackageEntity().getPackageId(),
                 userPackage.getPackageEntity().getPackageName(),

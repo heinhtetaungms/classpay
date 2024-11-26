@@ -9,7 +9,7 @@ import com.cp.classpay.api.output.booking.CancelBookingResponse;
 import java.util.List;
 
 public interface BookingService {
-    List<BookingConfirmedClassesResponse> bookingConfirmedClasses(String jwtToken);
-    BookingResponse bookingClass(String jwtToken, BookingClassRequest bookingClassRequest);
-    CancelBookingResponse cancelBooking(String jwtToken, CancelBookingRequest cancelBookingRequest);
+    List<BookingConfirmedClassesResponse> bookingConfirmedClasses();
+    BookingResponse bookingClass(BookingClassRequest bookingClassRequest);
+    CancelBookingResponse cancelBooking(CancelBookingRequest cancelBookingRequest);
 }

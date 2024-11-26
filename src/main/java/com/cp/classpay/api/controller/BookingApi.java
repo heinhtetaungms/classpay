@@ -5,10 +5,8 @@ import com.cp.classpay.api.input.class_.CancelBookingRequest;
 import com.cp.classpay.api.output.booking.BookingConfirmedClassesResponse;
 import com.cp.classpay.api.output.booking.BookingResponse;
 import com.cp.classpay.api.output.booking.CancelBookingResponse;
-import com.cp.classpay.entity.Booking;
 import com.cp.classpay.service.BookingService;
 import com.cp.classpay.utils.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -20,22 +18,25 @@ import java.util.List;
 @RequestMapping("/booking")
 public class BookingApi {
 
-    @Autowired
-    private BookingService bookingService;
+    private final BookingService bookingService;
 
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<BookingConfirmedClassesResponse>>> bookingConfirmedClasses(@RequestHeader("Authorization") String jwtToken) {
-        List<BookingConfirmedClassesResponse> bookingConfirmed = bookingService.bookingConfirmedClasses(jwtToken);
+    public BookingApi(BookingService bookingService) {
+        this.bookingService = bookingService;
+    }
+
+    @GetMapping("/confirmed-classes")
+    public ResponseEntity<ApiResponse<List<BookingConfirmedClassesResponse>>> bookingConfirmedClasses() {
+        List<BookingConfirmedClassesResponse> bookingConfirmed = bookingService.bookingConfirmedClasses();
         return ApiResponse.of(bookingConfirmed);
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<BookingResponse>> bookingClass(@RequestHeader("Authorization") String jwtToken, @Validated @RequestBody BookingClassRequest bookingClassRequest, BindingResult result) {
-        return ApiResponse.of(bookingService.bookingClass(jwtToken, bookingClassRequest));
+    public ResponseEntity<ApiResponse<BookingResponse>> bookingClass(@Validated @RequestBody BookingClassRequest bookingClassRequest, BindingResult result) {
+        return ApiResponse.of(bookingService.bookingClass(bookingClassRequest));
     }
 
     @PostMapping("/cancel")
-    public ResponseEntity<ApiResponse<CancelBookingResponse>> cancelBooking(@RequestHeader("Authorization") String jwtToken, @Validated @RequestBody CancelBookingRequest cancelBookingRequest, BindingResult result) {
-        return ApiResponse.of(bookingService.cancelBooking(jwtToken, cancelBookingRequest));
+    public ResponseEntity<ApiResponse<CancelBookingResponse>> cancelBooking(@Validated @RequestBody CancelBookingRequest cancelBookingRequest, BindingResult result) {
+        return ApiResponse.of(bookingService.cancelBooking(cancelBookingRequest));
     }
 }

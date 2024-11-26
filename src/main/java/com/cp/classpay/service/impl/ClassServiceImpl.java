@@ -1,7 +1,7 @@
 package com.cp.classpay.service.impl;
 
-import com.cp.classpay.api.input.class_.ClassRegistrationRequest;
-import com.cp.classpay.api.output.class_.ClassRegistrationResponse;
+import com.cp.classpay.api.input.class_.ClassRegisterRequest;
+import com.cp.classpay.api.output.class_.ClassRegisterResponse;
 import com.cp.classpay.api.output.class_.ClassResponse;
 import com.cp.classpay.commons.enum_.BookingStatus;
 import com.cp.classpay.entity.*;
@@ -22,41 +22,42 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ClassServiceImpl implements ClassService {
 
-    @Autowired
-    private ClassCacheService classCacheService;
-    @Autowired
-    private BusinessRepo businessRepo;
-    @Autowired
-    private BookingRepo bookingRepo;
-    @Autowired
-    private ClassRepo classRepo;
-    @Autowired
-    private UserPackageRepo userPackageRepo;
-    @Autowired
-    private RefundRepo refundRepo;
+    private final ClassCacheService classCacheService;
+    private final BusinessRepo businessRepo;
+    private final BookingRepo bookingRepo;
+    private final UserPackageRepo userPackageRepo;
+    private final RefundRepo refundRepo;
+
+    public ClassServiceImpl(ClassCacheService classCacheService, BusinessRepo businessRepo, BookingRepo bookingRepo, UserPackageRepo userPackageRepo, RefundRepo refundRepo) {
+        this.classCacheService = classCacheService;
+        this.businessRepo = businessRepo;
+        this.bookingRepo = bookingRepo;
+        this.userPackageRepo = userPackageRepo;
+        this.refundRepo = refundRepo;
+    }
 
     @Override
-    public ClassRegistrationResponse registerClass(ClassRegistrationRequest classRegistrationRequest) {
-        Business business =businessRepo.findById(classRegistrationRequest.businessId()).orElseThrow(() ->new IllegalArgumentException("Business not found by id " + classRegistrationRequest.businessId()));
+    public ClassRegisterResponse registerClass(ClassRegisterRequest classRegisterRequest) {
+        Business business =businessRepo.findById(classRegisterRequest.businessId()).orElseThrow(() ->new IllegalArgumentException("Business not found by id " + classRegisterRequest.businessId()));
         Class clazz =  Class.builder()
-                            .className(classRegistrationRequest.className())
-                            .country(classRegistrationRequest.country())
-                            .requiredCredits(classRegistrationRequest.requiredCredits())
-                            .availableSlots(classRegistrationRequest.availableSlots())
-                            .classStartDate(classRegistrationRequest.classStartDate())
-                            .classEndDate(classRegistrationRequest.classEndDate())
+                            .className(classRegisterRequest.className())
+                            .country(classRegisterRequest.country())
+                            .requiredCredits(classRegisterRequest.requiredCredits())
+                            .availableSlots(classRegisterRequest.availableSlots())
+                            .classStartDate(classRegisterRequest.classStartDate())
+                            .classEndDate(classRegisterRequest.classEndDate())
                             .business(business)
                             .build();
-        Class savedClass = classCacheService.saveClass(clazz);
+        Class savedClass = classCacheService.save(clazz);
 
-        return ClassRegistrationResponse.toClassRegistrationResponse(savedClass);
+        return ClassRegisterResponse.from(savedClass);
     }
 
     @Override
     public List<ClassResponse> getAvailableClassesByCountry(String classCountry) {
-        List<Class> classList = classCacheService.getAvailableClassesByCountry(classCountry);
+        List<Class> classList = classCacheService.findAllByCountry(classCountry);
         return classList.stream()
-                .map(data -> ClassResponse.toClassResponse(data))
+                .map(data -> ClassResponse.from(data))
                 .collect(Collectors.toList());
     }
 

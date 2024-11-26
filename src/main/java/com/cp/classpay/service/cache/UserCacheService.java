@@ -5,7 +5,8 @@ import com.cp.classpay.entity.User;
 import com.cp.classpay.repository.UserRepo;
 import com.cp.classpay.security.token.JwtTokenParser;
 import com.cp.classpay.utils.RedisUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -14,50 +15,62 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class UserCacheService {
 
-    private static final String USER_CACHE_KEY_PREFIX = "user:";
+    private final JwtTokenParser jwtTokenParser;
+    private final UserRepo userRepo;
+    private final RedisUtil redisUtil;
 
-    @Autowired
-    private RedisUtil redisUtil;
-    @Autowired
-    private JwtTokenParser jwtTokenParser;
-    @Autowired
-    private UserRepo userRepo;
-
-    public void cacheUser(User user) {
-        String cacheKey = USER_CACHE_KEY_PREFIX + user.getEmail();
-        redisUtil.setHash(cacheKey, user, 1, TimeUnit.HOURS);
+    public UserCacheService(JwtTokenParser jwtTokenParser, UserRepo userRepo, RedisUtil redisUtil) {
+        this.jwtTokenParser = jwtTokenParser;
+        this.userRepo = userRepo;
+        this.redisUtil = redisUtil;
     }
 
-    public Optional<User> getUserFromCache(String email) {
-        String cacheKey = USER_CACHE_KEY_PREFIX + email;
-        User user = redisUtil.getHash(cacheKey, User.class);
-        return Optional.ofNullable(user);
+    @Value("${app.redis.user_e.key_prefix}")
+    private String user_e_key_prefix;
+    @Value("${app.redis.user_e.key_ttl}")
+    private long user_e_key_ttl;
+
+    public User save(User user) {
+        User record = userRepo.save(user);
+
+        String key = user_e_key_prefix + record.getEmail();
+        set(key, record);
+
+        return record;
     }
 
+    public User findByEmail(String email) {
+        String key = user_e_key_prefix + email;
+        User record = redisUtil.getHash(key, User.class);
 
-    public User getUser(String jwtToken) {
-        // Validate JWT token and retrieve user
-        var authentication = jwtTokenParser.parse(TokenType.Access, jwtToken);
-        var user = findByEmail(authentication.getName()).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return user;
-    }
-
-    //TODO
-    public User getUser(Long userId) {
-        return userRepo.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-    }
-
-    public Optional<User> findByEmail(String email) {
-        // Attempt to retrieve user from cache
-        Optional<User> cachedUser = getUserFromCache(email);
-        if (cachedUser.isPresent()) {
-            return cachedUser;
+        if (record == null) {
+            record = userRepo.findByEmail(email);
+            set(key, record);
         }
+        return record;
+    }
 
-        // If not in cache, load from database
-        Optional<User> userFromDb = userRepo.findByEmail(email);
-        // Cache user after retrieval
-        userFromDb.ifPresent(this::cacheUser);
-        return userFromDb;
+    public Optional<User> findByEmailOrElse(String email) {
+        String key = user_e_key_prefix + email;
+        User record = redisUtil.getHash(key, User.class);
+
+        if (record == null) {
+            Optional<User> optionalUser = userRepo.findUserByEmail(email);
+            optionalUser.ifPresent(user -> set(key, user));
+            return optionalUser;
+        }
+        return Optional.ofNullable(record);
+    }
+
+    public User getUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        return findByEmail(email);
+    }
+    public User getUser(String email) {
+        return findByEmail(email);
+    }
+
+    private void set(String key, User user) {
+        redisUtil.setHash(key, user, user_e_key_ttl, TimeUnit.MINUTES);
     }
 }

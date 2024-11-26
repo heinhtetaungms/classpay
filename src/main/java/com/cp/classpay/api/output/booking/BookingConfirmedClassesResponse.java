@@ -13,7 +13,7 @@ public record BookingConfirmedClassesResponse(
         String country,
         ZonedDateTime classDate
 ) {
-    public static BookingConfirmedClassesResponse toBookingResponse(Booking booking) {
+    public static BookingConfirmedClassesResponse from(Booking booking) {
         return new BookingConfirmedClassesResponse(
                 booking.getBookingId(),
                 booking.getUser().getUserId(),

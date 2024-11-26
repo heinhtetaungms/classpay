@@ -1,7 +1,6 @@
 package com.cp.classpay.repository;
 
 import com.cp.classpay.commons.enum_.PackageStatus;
-import com.cp.classpay.entity.User;
 import com.cp.classpay.entity.UserPackage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,13 +9,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface UserPackageRepo extends JpaRepository<UserPackage, Long> {
     List<UserPackage> findAllByUser_UserIdAndUser_Country(Long userId, String country);
-    List<UserPackage> findAllByUserUserId(Long userId);
-    Optional<UserPackage> findByUser(User user);
     boolean existsUserPackageByUser_UserIdAndPackageEntity_PackageIdAndStatus(Long userId, Long packageId, PackageStatus status);
 
     @Modifying

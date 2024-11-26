@@ -14,7 +14,7 @@ public record CancelBookingResponse(
         ZonedDateTime cancellationTime
 
 ) {
-    public static CancelBookingResponse toCancelBookingResponse(Booking booking) {
+    public static CancelBookingResponse from(Booking booking) {
         return new CancelBookingResponse(
                 booking.getBookingId(),
                 booking.getClassEntity().getClassName(),

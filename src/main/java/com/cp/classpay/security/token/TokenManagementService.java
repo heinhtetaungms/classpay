@@ -6,6 +6,7 @@ import com.cp.classpay.api.input.auth.TokenRequestForm;
 import com.cp.classpay.api.output.auth.TokenResponse;
 import com.cp.classpay.commons.enum_.TokenType;
 import com.cp.classpay.repository.UserRepo;
+import com.cp.classpay.service.cache.UserCacheService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,8 +28,8 @@ public class TokenManagementService {
 	@Autowired
 	private JwtTokenGenerator jwtTokenGenerator;
 
-	@Autowired
-	private UserRepo userRepo;
+    @Autowired
+    private UserCacheService userCacheService;
 
 	@Transactional(readOnly = true)
 	public TokenResponse generate(TokenRequestForm form) {
@@ -50,8 +51,7 @@ public class TokenManagementService {
 
 	private TokenResponse getResponse(Authentication authentication) {
 
-		var user = userRepo.findByEmail(authentication.getName())
-				.orElseThrow(() -> new UsernameNotFoundException("Invalid login id."));
+		var user = userCacheService.findByEmail(authentication.getName());
 
 		var accessToken = jwtTokenGenerator.generate(TokenType.Access, authentication);
 		var refreshToken = jwtTokenGenerator.generate(TokenType.Refresh, authentication);

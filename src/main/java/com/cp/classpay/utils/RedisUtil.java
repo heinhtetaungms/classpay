@@ -3,7 +3,6 @@ package com.cp.classpay.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
@@ -36,10 +35,6 @@ public class RedisUtil {
         return redisTemplate.opsForValue().get(key);
     }
 
-    public boolean exists(String key) {
-        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
-    }
-
     public boolean delete(String key) {
         return Boolean.TRUE.equals(redisTemplate.delete(key));
     }
@@ -48,37 +43,8 @@ public class RedisUtil {
         redisTemplate.expire(key, duration, timeUnit);
     }
 
-    public Long incrementBy(String key) {
+    public Long increment(String key) {
         return redisTemplate.opsForValue().increment(key);
-    }
-
-    public Long incrementBy(String key, long incrementBy) {
-        return redisTemplate.opsForValue().increment(key, incrementBy);
-    }
-
-    public void decrementBy(String key, long decrementBy) {
-        redisTemplate.opsForValue().decrement(key, decrementBy);
-    }
-
-    // Remove all elements from a Redis List, Trims list, effectively clearing it
-    public void clearList(String key) {
-        redisTemplate.opsForList().trim(key, 1, 0);
-    }
-
-    private String serialize(Object obj) {
-        try {
-            return objectMapper.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Could not serialize object", e);
-        }
-    }
-
-    private <T> T deserialize(String json, CollectionType collectionType) {
-        try {
-            return objectMapper.readValue(json, collectionType);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Could not deserialize object", e);
-        }
     }
 
     public <T> void setList(String key, List<T> list, long duration, TimeUnit timeUnit) {
@@ -97,16 +63,12 @@ public class RedisUtil {
         String json = (String) redisTemplate.opsForValue().get(key);
 
         if (json == null || json.isEmpty()) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
 
         return deserialize(json, objectMapper.getTypeFactory().constructCollectionType(List.class, clazz));
     }
 
-
-
-
-    // --- Hash Operations for Field-Level Access ---
     public <T> void setHash(String key, T object, long duration, TimeUnit timeUnit) {
         try {
             redisTemplate.opsForHash().putAll(key, objectMapper.convertValue(object, Map.class));
@@ -136,7 +98,7 @@ public class RedisUtil {
         String json = (String) redisTemplate.opsForList().rightPop(key); // Remove from the right (queue rear)
 
         if (json == null) {
-            return null; // No items in the queue
+            return null;
         }
         try {
             return objectMapper.readValue(json, clazz);
@@ -154,7 +116,8 @@ public class RedisUtil {
     public void saveClassEndDate(Long classId, ZonedDateTime endDate) {
         ZSetOperations<String, Long> zSetOps = getZSetOperationsForLong();
         long score = endDate.toEpochSecond();
-        zSetOps.add("classEndDates", classId, score);
+        String key = "class_end_date";
+        zSetOps.add(key, classId, score);
     }
 
     /**
@@ -185,15 +148,29 @@ public class RedisUtil {
      * @param end   the end of the time range in epoch seconds
      * @return set of class IDs ending within the specified time range
      */
-    public Set<Long> getClassesEndingBetween(long start, long end) {
+    private Set<Long> getClassesEndingBetween(long start, long end) {
         ZSetOperations<String, Long> zSetOps = getZSetOperationsForLong();
         return zSetOps.rangeByScore("classEndDates", start, end);
     }
-
 
     @SuppressWarnings("unchecked")
     private ZSetOperations<String, Long> getZSetOperationsForLong() {
         return (ZSetOperations<String, Long>) (ZSetOperations<?, ?>) redisTemplate.opsForZSet();
     }
 
+    private String serialize(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Could not serialize object", e);
+        }
+    }
+
+    private <T> T deserialize(String json, CollectionType collectionType) {
+        try {
+            return objectMapper.readValue(json, collectionType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Could not deserialize object", e);
+        }
+    }
 }

@@ -32,10 +32,15 @@ public class ClassCacheService {
     @Value("${app.redis.class_l.key_ttl}")
     private long class_l_key_ttl;
 
-    public Set<Long> classesEndingAroundNow() {
-        Set<Long> classesEndingAroundNow = redisUtil.getClassesEndingAroundNow(60);
-        return classesEndingAroundNow;
-    }
+    @Value("${app.redis.classes_with_start_date.key_prefix}")
+    private String classes_with_start_date_key_prefix;
+    @Value("${app.redis.classes_with_start_date.key_ttl}")
+    private long classes_with_start_date_key_ttl;
+
+    @Value("${app.redis.classes_with_end_date.key_prefix}")
+    private String classes_with_end_date_key_prefix;
+    @Value("${app.redis.classes_with_end_date.key_ttl}")
+    private long classes_with_end_date_key_ttl;
 
     public Class save(Class clazz) {
         Class record = classRepo.save(clazz);
@@ -43,7 +48,8 @@ public class ClassCacheService {
         String key = class_e_key_prefix + record.getClassId();
         set(key, record);
 
-        zSetAddForClassEndDate(record);
+        zSetAddForClassStartDate(record);
+        zSetAddForClassEndDate( record);
 
         update_available_class_list_by_country(record);
 
@@ -69,6 +75,8 @@ public class ClassCacheService {
             recordList = classRepo.findAllByCountry(classCountry);
             setList(key, recordList);
         }
+        recordList.forEach(record -> zSetAddForClassStartDate(record));
+        recordList.forEach(record -> zSetAddForClassEndDate(record));
         return recordList;
     }
 
@@ -96,7 +104,21 @@ public class ClassCacheService {
         redisUtil.setList(key, classList, class_l_key_ttl, TimeUnit.MINUTES);
     }
 
+    public Set<Long> classesStartingAroundNow() {
+        Set<Long> classesStartingAroundNow = redisUtil.getClassesAroundNow(classes_with_start_date_key_prefix,60);
+        return classesStartingAroundNow;
+    }
+
+    public Set<Long> classesEndingAroundNow() {
+        Set<Long> classesEndingAroundNow = redisUtil.getClassesAroundNow(classes_with_end_date_key_prefix,60);
+        return classesEndingAroundNow;
+    }
+
+    private void zSetAddForClassStartDate(Class clazz) {
+        redisUtil.saveClassDate(classes_with_start_date_key_prefix, clazz.getClassId(), clazz.getClassStartDate(), classes_with_start_date_key_ttl, TimeUnit.MINUTES);
+    }
+
     private void zSetAddForClassEndDate(Class clazz) {
-        redisUtil.saveClassEndDate(clazz.getClassId(), clazz.getClassEndDate());
+        redisUtil.saveClassDate(classes_with_end_date_key_prefix, clazz.getClassId(), clazz.getClassEndDate(), classes_with_end_date_key_ttl, TimeUnit.MINUTES);
     }
 }

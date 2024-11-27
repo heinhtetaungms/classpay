@@ -8,9 +8,9 @@ import com.cp.classpay.entity.*;
 import com.cp.classpay.entity.Class;
 import com.cp.classpay.repository.*;
 import com.cp.classpay.service.ClassService;
-import com.cp.classpay.service.cache.ClassCacheService;
+import com.cp.classpay.service.MockEmailService;
+import com.cp.classpay.service.cache.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -24,17 +24,24 @@ public class ClassServiceImpl implements ClassService {
 
     private final ClassCacheService classCacheService;
     private final BusinessRepo businessRepo;
+    private final BookingCacheService bookingCacheService;
+    private final BookingDetailCacheService bookingDetailCacheService;
+    private final RefundCacheService refundCacheService;
+    private final UserPackageCacheService userPackageCacheService;
     private final BookingRepo bookingRepo;
-    private final UserPackageRepo userPackageRepo;
-    private final RefundRepo refundRepo;
+    private final MockEmailService mockEmailService;
 
-    public ClassServiceImpl(ClassCacheService classCacheService, BusinessRepo businessRepo, BookingRepo bookingRepo, UserPackageRepo userPackageRepo, RefundRepo refundRepo) {
+    public ClassServiceImpl(ClassCacheService classCacheService, BusinessRepo businessRepo, BookingCacheService bookingCacheService, BookingDetailCacheService bookingDetailCacheService, RefundCacheService refundCacheService, UserPackageCacheService userPackageCacheService, BookingRepo bookingRepo, MockEmailService mockEmailService) {
         this.classCacheService = classCacheService;
         this.businessRepo = businessRepo;
+        this.bookingCacheService = bookingCacheService;
+        this.bookingDetailCacheService = bookingDetailCacheService;
+        this.refundCacheService = refundCacheService;
+        this.userPackageCacheService = userPackageCacheService;
         this.bookingRepo = bookingRepo;
-        this.userPackageRepo = userPackageRepo;
-        this.refundRepo = refundRepo;
+        this.mockEmailService = mockEmailService;
     }
+
 
     @Override
     public ClassRegisterResponse registerClass(ClassRegisterRequest classRegisterRequest) {
@@ -62,37 +69,45 @@ public class ClassServiceImpl implements ClassService {
     }
 
     @Override
-    public void when_class_end_waitlist_user_credit_need_to_be_refunded() {
+    public void refundWaitlistUserCreditsWhenClassEnd() {
         Set<Long> classesEndingAroundNow = classCacheService.classesEndingAroundNow();
-        classesEndingAroundNow.stream().forEach(classId -> {
-            processRefund(classId);
-        });
+        classesEndingAroundNow.stream().forEach(classId -> processRefund(classId));
     }
 
-    void processRefund(long classId) {
-        List<Booking> bookingList = bookingRepo.findAllByClassEntity_ClassIdAndStatus(classId, BookingStatus.WAITLISTED);
-        bookingList.stream().forEach(booking -> {
-            refundCredit(booking);
-        });
+    @Override
+    public void remindClassStartTimeToUser() {
+        Set<Long> classesStaringAroundNow = classCacheService.classesStartingAroundNow();
+        classesStaringAroundNow.stream().forEach(classId -> sendRemindEmail(classId));
+
     }
 
-    void refundCredit(Booking booking) {
+    private void sendRemindEmail(long classId) {
+        List<Booking> bookedBookingList = bookingRepo.findAllByClassEntity_ClassIdAndStatus(classId, BookingStatus.BOOKED);
+        bookedBookingList.stream().forEach(booking -> mockEmailService.sendRemindToCheckInWhenClassTimeStart(booking.getUser().getEmail(), booking.getClassEntity().getClassName()));
+    }
+
+    private void processRefund(long classId) {
+        List<Booking> waitlistedBookingList = bookingRepo.findAllByClassEntity_ClassIdAndStatus(classId, BookingStatus.WAITLISTED);
+        waitlistedBookingList.stream().forEach(booking -> refundCredit(booking));
+    }
+
+    private void refundCredit(Booking booking) {
         booking.setStatus(BookingStatus.REFUNDED);
-        bookingRepo.save(booking);
+        bookingCacheService.save(booking);
 
-        List<BookingDetail> bookingDetails = booking.getBookingDetails();
-        for (BookingDetail bookingDetail : bookingDetails) {
-            UserPackage userPackage = bookingDetail.getUserPackage();
-            userPackage.setRemainingCredits(userPackage.getRemainingCredits() + bookingDetail.getCreditsDeducted());
-            userPackageRepo.save(userPackage);
-            log.debug("Refunded {} credits to user package {} for booking detail {}", bookingDetail.getCreditsDeducted(), userPackage.getUserPackageId(), bookingDetail.getBookingDetailId());
+        List<BookingDetail> bookingDetails = bookingDetailCacheService.findAllByBookingId(booking.getBookingId());
+        bookingDetails.stream().forEach(bookingDetail -> {
+                                        UserPackage userPackage = bookingDetail.getUserPackage();
+                                        userPackage.setRemainingCredits(userPackage.getRemainingCredits() + bookingDetail.getCreditsDeducted());
+                                        userPackageCacheService.save(userPackage);
+                                        log.debug("Refunded {} credits to user package {} for booking detail {}", bookingDetail.getCreditsDeducted(), userPackage.getUserPackageId(), bookingDetail.getBookingDetailId());
 
-            Refund refund = new Refund();
-            refund.setUser(booking.getUser());
-            refund.setUserPackage(userPackage);
-            refund.setCreditRefunded(bookingDetail.getCreditsDeducted());
-            refund.setRefundTime(ZonedDateTime.now());
-            refundRepo.save(refund);
-        }
+                                        Refund refund = new Refund();
+                                        refund.setUser(booking.getUser());
+                                        refund.setUserPackage(userPackage);
+                                        refund.setCreditRefunded(bookingDetail.getCreditsDeducted());
+                                        refund.setRefundTime(ZonedDateTime.now());
+                                        refundCacheService.save(refund);
+                                    });
     }
 }

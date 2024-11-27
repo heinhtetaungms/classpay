@@ -60,8 +60,8 @@ public class PackageServiceImpl implements PackageService {
     }
 
     @Override
-    public PurchasePackageResponse purchasePackage(String jwtToken, PurchasePackageRequest purchasePackageRequest) {
-        User user = userCacheService.getUser(jwtToken);
+    public PurchasePackageResponse purchasePackage(PurchasePackageRequest purchasePackageRequest) {
+        User user = userCacheService.getUser();
 
         //Retrieve package by ID and check if it exists
         Package selectedPackage = packageCacheService.findById(purchasePackageRequest.packageId());

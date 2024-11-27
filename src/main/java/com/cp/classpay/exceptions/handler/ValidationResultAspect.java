@@ -12,9 +12,9 @@ import org.springframework.validation.BindingResult;
 public class ValidationResultAspect {
 	
 	@Pointcut("@within(org.springframework.web.bind.annotation.RestController)")
-	public void apiMethod() {};
+	public void apiMethod() {}
 
-	@Before(value = "apiMethod() && args(.., result)", argNames = "result")
+    @Before(value = "apiMethod() && args(.., result)", argNames = "result")
 	public void handle(BindingResult result) {
 
 		if(result.hasErrors()) {

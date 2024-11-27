@@ -3,8 +3,7 @@ package com.cp.classpay.entity;
 import com.cp.classpay.commons.enum_.BookingStatus;
 import com.cp.classpay.utils.AuditableEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -14,6 +13,9 @@ import java.util.List;
 @Table(name = "bookings")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Booking extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,9 +28,6 @@ public class Booking extends AuditableEntity {
     @ManyToOne
     @JoinColumn(name = "class_id", nullable = false)
     private Class classEntity;
-
-    @OneToMany(mappedBy = "booking")
-    private List<BookingDetail> bookingDetails = new ArrayList<>();
 
     @Column(nullable = false)
     private ZonedDateTime bookingTime;

@@ -88,9 +88,10 @@ public class RedisUtil {
 
 
     // FIFO Logic: Add item to the queue (LPUSH)
-    public <T> void pushToQueue(String key, T item) {
+    public <T> void pushToQueue(String key, T item, long duration, TimeUnit timeUnit) {
         String serializedItem = serialize(item);
         redisTemplate.opsForList().leftPush(key, serializedItem); // Add to the left (queue front)
+        expire(key, duration, timeUnit);
     }
 
     // FIFO Logic: Retrieve and remove the item from the queue (RPOP)
@@ -107,50 +108,21 @@ public class RedisUtil {
         }
     }
 
-    /**
-     * Stores a class's end date in Redis ZSet with epoch seconds as the score.
-     *
-     * @param classId the ID of the class
-     * @param endDate the end date of the class
-     */
-    public void saveClassEndDate(Long classId, ZonedDateTime endDate) {
+    public void saveClassDate(String key, Long classId, ZonedDateTime classDate, long duration, TimeUnit timeUnit) {
         ZSetOperations<String, Long> zSetOps = getZSetOperationsForLong();
-        long score = endDate.toEpochSecond();
-        String key = "class_end_date";
+        long score = classDate.toEpochSecond();
         zSetOps.add(key, classId, score);
+        expire(key, duration, timeUnit);
     }
 
-    /**
-     * Retrieves IDs of classes ending exactly at the current time (to the second).
-     *
-     * @return set of class IDs ending at the current epoch second
-     */
-    public Set<Long> getClassesEndingNow() {
+    public Set<Long> getClassesAroundNow(String key, int bufferSeconds) {
         long currentEpochSecond = Instant.now().getEpochSecond();
-        return getClassesEndingBetween(currentEpochSecond, currentEpochSecond);
+        return getClassesBetween(key,currentEpochSecond - bufferSeconds, currentEpochSecond + bufferSeconds);
     }
 
-    /**
-     * Retrieves IDs of classes ending within a buffer window around the current time.
-     *
-     * @param bufferSeconds the time buffer in seconds
-     * @return set of class IDs ending within the buffer window
-     */
-    public Set<Long> getClassesEndingAroundNow(int bufferSeconds) {
-        long currentEpochSecond = Instant.now().getEpochSecond();
-        return getClassesEndingBetween(currentEpochSecond - bufferSeconds, currentEpochSecond + bufferSeconds);
-    }
-
-    /**
-     * Retrieves IDs of classes ending within a specified time range.
-     *
-     * @param start the start of the time range in epoch seconds
-     * @param end   the end of the time range in epoch seconds
-     * @return set of class IDs ending within the specified time range
-     */
-    private Set<Long> getClassesEndingBetween(long start, long end) {
+    private Set<Long> getClassesBetween(String key, long start, long end) {
         ZSetOperations<String, Long> zSetOps = getZSetOperationsForLong();
-        return zSetOps.rangeByScore("classEndDates", start, end);
+        return zSetOps.rangeByScore(key, start, end);
     }
 
     @SuppressWarnings("unchecked")

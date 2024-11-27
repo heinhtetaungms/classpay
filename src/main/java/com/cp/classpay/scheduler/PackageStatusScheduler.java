@@ -16,7 +16,7 @@ public class PackageStatusScheduler {
      * Run daily at midnight to update expired packages.
      */
     //@Scheduled(cron = "0 0 0 * * ?")
-    @Scheduled(cron = "0 */2 * * * *")
+    @Scheduled(cron = "0 */5 * * * *")
     public void updateExpiredPackagesJob() {
         int updatedCount = userPackageService.updateExpiredPackages();
         log.info("Updated expired packages job count: {}", updatedCount);

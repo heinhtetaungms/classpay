@@ -11,8 +11,9 @@ public record BookingConfirmedClassesResponse(
         Long classId,
         String className,
         String country,
-        ZonedDateTime classDate
-) {
+        ZonedDateTime classStartDate,
+        ZonedDateTime classEndDate
+        ) {
     public static BookingConfirmedClassesResponse from(Booking booking) {
         return new BookingConfirmedClassesResponse(
                 booking.getBookingId(),
@@ -20,7 +21,8 @@ public record BookingConfirmedClassesResponse(
                 booking.getClassEntity().getClassId(),
                 booking.getClassEntity().getClassName(),
                 booking.getClassEntity().getCountry(),
-                booking.getClassEntity().getClassStartDate()
+                booking.getClassEntity().getClassStartDate(),
+                booking.getClassEntity().getClassEndDate()
         );
     }
 }

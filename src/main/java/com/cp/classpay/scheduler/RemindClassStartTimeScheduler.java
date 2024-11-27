@@ -8,17 +8,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class ClassEndScheduler {
+public class RemindClassStartTimeScheduler {
     @Autowired
     private ClassService classService;
 
-    /**
-     * Run daily every hour to be when class end waitlist user credit need to be refunded
-     */
-    @Scheduled(cron = "0 0 * * * *")
-    public void refundWaitlistUserCreditsWhenClassEnd() {
-        log.info("refundWaitlistUserCreditsWhenClassEnd job run.");
-        classService.refundWaitlistUserCreditsWhenClassEnd();
+    @Scheduled(cron = "0 */5 * * * *")
+    public void remindClassStartTimeToUser() {
+        classService.remindClassStartTimeToUser();
     }
 }
 

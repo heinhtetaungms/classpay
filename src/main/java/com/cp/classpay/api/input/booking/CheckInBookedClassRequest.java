@@ -2,8 +2,8 @@ package com.cp.classpay.api.input.booking;
 
 import jakarta.validation.constraints.NotNull;
 
-public record BookingClassRequest(
+public record CheckInBookedClassRequest(
         @NotNull(message = "Please enter class id.")
-        Long classId
+        Long bookingId
 ) {
 }

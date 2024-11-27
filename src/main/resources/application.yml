@@ -1,6 +1,6 @@
 server:
   servlet:
-    context-path: /cp
+    context-path: /classpay
 
 spring:
   data:
@@ -64,17 +64,41 @@ app:
       key_prefix: "user_package:"
       key_ttl: 15
     user_package_l:
-      key_prefix: "user_package_country:"
+      key_prefix: "user_purchased_package_by_user_id:user_country:"
       key_ttl: 15
     class_e:
       key_prefix: "class:"
       key_ttl: 15
     class_l:
-      key_prefix: "available_classes:"
+      key_prefix: "available_classes_by_country:"
       key_ttl: 15
     package_e:
       key_prefix: "package:"
       key_ttl: 15
     package_l:
-      key_prefix: "available_packages:"
+      key_prefix: "available_packages_by_country:"
+      key_ttl: 15
+    booking_e:
+      key_prefix: "booking:"
+      key_ttl: 15
+    booked_booking_list_by_user_id:
+      key_prefix: "booked_booking_list_by_user_id:"
+      key_ttl: 15
+    booking_detail_e:
+      key_prefix: "booking_detail:"
+      key_ttl: 15
+    booking_detail_l:
+      key_prefix: "booking_details_by_booking_id:"
+      key_ttl: 15
+    refund_e:
+      key_prefix: "refund:"
+      key_ttl: 15
+    user_waitlist_by_class_id:
+      key_prefix: "user_waitlist_by_class_id:"
+      key_ttl: 15
+    classes_with_start_date:
+      key_prefix: "classes_with_start_date:"
+      key_ttl: 15
+    classes_with_end_date:
+      key_prefix: "classes_with_end_date:"
       key_ttl: 15

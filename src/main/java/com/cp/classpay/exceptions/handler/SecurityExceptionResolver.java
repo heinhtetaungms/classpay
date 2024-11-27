@@ -1,6 +1,5 @@
 package com.cp.classpay.exceptions.handler;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +9,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import java.io.IOException;
-
 public class SecurityExceptionResolver implements AuthenticationEntryPoint, AccessDeniedHandler {
 
 	@Autowired
@@ -19,13 +16,13 @@ public class SecurityExceptionResolver implements AuthenticationEntryPoint, Acce
 	
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response,
-			AuthenticationException authException) throws IOException, ServletException {
+			AuthenticationException authException) {
 		handlerExceptionResolver.resolveException(request, response, null, authException);
 	}
 
 	@Override
 	public void handle(HttpServletRequest request, HttpServletResponse response,
-			AccessDeniedException accessDeniedException) throws IOException, ServletException {
+			AccessDeniedException accessDeniedException) {
 		handlerExceptionResolver.resolveException(request, response, null, accessDeniedException);
 	}
 

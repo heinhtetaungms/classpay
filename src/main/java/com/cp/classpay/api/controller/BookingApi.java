@@ -1,6 +1,7 @@
 package com.cp.classpay.api.controller;
 
 import com.cp.classpay.api.input.booking.BookingClassRequest;
+import com.cp.classpay.api.input.booking.CheckInBookedClassRequest;
 import com.cp.classpay.api.input.class_.CancelBookingRequest;
 import com.cp.classpay.api.output.booking.BookingConfirmedClassesResponse;
 import com.cp.classpay.api.output.booking.BookingResponse;
@@ -33,6 +34,11 @@ public class BookingApi {
     @PostMapping
     public ResponseEntity<ApiResponse<BookingResponse>> bookingClass(@Validated @RequestBody BookingClassRequest bookingClassRequest, BindingResult result) {
         return ApiResponse.of(bookingService.bookingClass(bookingClassRequest));
+    }
+
+    @PostMapping("/check-in")
+    public ResponseEntity<ApiResponse<BookingResponse>> checkInBookedClass(@Validated @RequestBody CheckInBookedClassRequest checkInBookedClassRequest, BindingResult result) {
+        return ApiResponse.of(bookingService.checkInBookedClass(checkInBookedClassRequest));
     }
 
     @PostMapping("/cancel")

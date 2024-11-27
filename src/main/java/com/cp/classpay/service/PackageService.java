@@ -12,6 +12,6 @@ import java.util.List;
 public interface PackageService {
     PackageRegisterResponse registerPackage(PackageRegisterRequest packageRegisterRequest);
     List<PackageResponse> getAvailablePackagesByCountry(String country);
-    PurchasePackageResponse purchasePackage(String jwtToken, PurchasePackageRequest purchasePackageRequest);
+    PurchasePackageResponse purchasePackage(PurchasePackageRequest purchasePackageRequest);
     List<UserPackageResponse> getPurchasedPackagesByUserIdAndCountry(Long userId, String country);
 }

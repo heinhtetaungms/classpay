@@ -1,5 +1,7 @@
 package com.cp.classpay.service.cache;
 
+import com.cp.classpay.exceptions.BookingConcurrencyException;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
@@ -7,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class BookingLockService {
 
     private final RedissonClient redissonClient;
@@ -15,20 +18,27 @@ public class BookingLockService {
         this.redissonClient = redissonClient;
     }
 
-    public boolean lockForBooking(Long userId, Long classId) {
+    public AutoLock lockForBooking(Long userId, Long classId) throws InterruptedException {
         RLock lock = redissonClient.getLock("booking_lock:" + userId + ":" + classId);
-        try {
-            return lock.tryLock(60, TimeUnit.SECONDS); // Adjust lock timeout as necessary
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return false;
+        if (lock.tryLock(10, 60, TimeUnit.SECONDS)) {
+            return new AutoLock(lock);
+        } else {
+            throw new BookingConcurrencyException("Booking lock could not be acquired.");
         }
     }
 
-    public void releaseBookingLock(Long userId, Long classId) {
-        RLock lock = redissonClient.getLock("booking_lock:" + userId + ":" + classId);
-        if (lock.isHeldByCurrentThread()) {
-            lock.unlock();
+    public static class AutoLock implements AutoCloseable {
+        private final RLock lock;
+
+        public AutoLock(RLock lock) {
+            this.lock = lock;
+        }
+
+        @Override
+        public void close() {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
     }
 }

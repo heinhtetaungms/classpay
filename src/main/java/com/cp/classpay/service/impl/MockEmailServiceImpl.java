@@ -24,4 +24,10 @@ public class MockEmailServiceImpl implements MockEmailService {
         log.info("Reset Pin email sent to {}, use this rest pin {} to login and change password for your security.", email, resetPin);
         return true;
     }
+
+    @Override
+    public boolean sendRemindToCheckInWhenClassTimeStart(String email, String className) {
+        log.info("Remind email sent to {}, Please check in the class {}", email, className);
+        return false;
+    }
 }

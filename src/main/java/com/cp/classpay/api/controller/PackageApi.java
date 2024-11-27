@@ -38,8 +38,8 @@ public class PackageApi {
     }
 
     @PostMapping("/purchase")
-    public ResponseEntity<ApiResponse<PurchasePackageResponse>> purchasePackage(@RequestHeader("Authorization") String jwtToken, @Validated @RequestBody PurchasePackageRequest purchasePackageRequest, BindingResult result) {
-        PurchasePackageResponse purchasePackageResponse = packageService.purchasePackage(jwtToken, purchasePackageRequest);
+    public ResponseEntity<ApiResponse<PurchasePackageResponse>> purchasePackage(@Validated @RequestBody PurchasePackageRequest purchasePackageRequest, BindingResult result) {
+        PurchasePackageResponse purchasePackageResponse = packageService.purchasePackage(purchasePackageRequest);
         return ApiResponse.of(purchasePackageResponse);
     }
 

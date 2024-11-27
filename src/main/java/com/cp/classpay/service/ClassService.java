@@ -9,5 +9,6 @@ import java.util.List;
 public interface ClassService {
     ClassRegisterResponse registerClass(ClassRegisterRequest classRegisterRequest);
     List<ClassResponse> getAvailableClassesByCountry(String country);
-    void when_class_end_waitlist_user_credit_need_to_be_refunded();
+    void refundWaitlistUserCreditsWhenClassEnd();
+    void remindClassStartTimeToUser();
 }

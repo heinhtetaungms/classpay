@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 @Service
 public class PackageServiceImpl implements PackageService {
 
-
     private final UserPackageRepo userPackageRepo;
     private final MockPaymentService mockPaymentService;
     private final PackageCacheService packageCacheService;
@@ -71,7 +70,7 @@ public class PackageServiceImpl implements PackageService {
             throw new IllegalArgumentException("Package is not available for the user's country.");
         }
 
-        //TODO: to refactor this db hit & consider logic
+        //TODO: to refactor this db hit
         boolean hasActivePackage = userPackageRepo.existsUserPackageByUser_UserIdAndPackageEntity_PackageIdAndStatus(user.getUserId(), purchasePackageRequest.packageId(), PackageStatus.ACTIVE);
 
         if (hasActivePackage) {

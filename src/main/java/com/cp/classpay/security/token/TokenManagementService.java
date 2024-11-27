@@ -1,37 +1,37 @@
 package com.cp.classpay.security.token;
 
-
 import com.cp.classpay.api.input.auth.TokenRefreshForm;
 import com.cp.classpay.api.input.auth.TokenRequestForm;
 import com.cp.classpay.api.output.auth.TokenResponse;
 import com.cp.classpay.commons.enum_.TokenType;
-import com.cp.classpay.repository.UserRepo;
 import com.cp.classpay.service.cache.UserCacheService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TokenManagementService {
 
-	@Autowired
-	private AuthenticationManager authenticationManager;
+	private final AuthenticationManager authenticationManager;
 
-	@Autowired
-	private JwtTokenParser jwtTokenParser;
+	private final JwtTokenParser jwtTokenParser;
 
-	@Autowired
-	private JwtTokenGenerator jwtTokenGenerator;
+	private final JwtTokenGenerator jwtTokenGenerator;
 
-    @Autowired
-    private UserCacheService userCacheService;
+    private final UserCacheService userCacheService;
 
-	@Transactional(readOnly = true)
+    public TokenManagementService(AuthenticationManager authenticationManager, JwtTokenParser jwtTokenParser, JwtTokenGenerator jwtTokenGenerator, UserCacheService userCacheService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenParser = jwtTokenParser;
+        this.jwtTokenGenerator = jwtTokenGenerator;
+        this.userCacheService = userCacheService;
+    }
+
+
+    @Transactional(readOnly = true)
 	public TokenResponse generate(TokenRequestForm form) {
 
 		var usernamePasswordToken = UsernamePasswordAuthenticationToken.unauthenticated(form.email(), form.password());

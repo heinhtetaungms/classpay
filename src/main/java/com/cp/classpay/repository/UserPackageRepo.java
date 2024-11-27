@@ -22,6 +22,4 @@ public interface UserPackageRepo extends JpaRepository<UserPackage, Long> {
             "AND expiration_date < :currentDate",
             nativeQuery = true)
     int updateExpiredPackages(ZonedDateTime currentDate);
-
-    List<UserPackage> findByUserUserIdAndStatus(Long userId, PackageStatus status);
 }

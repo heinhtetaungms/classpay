@@ -5,7 +5,6 @@ import com.cp.classpay.exceptions.ApiRateLimitedException;
 import com.cp.classpay.service.OTPService;
 import com.cp.classpay.utils.PrettyOTPUtil;
 import com.cp.classpay.utils.RedisUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;

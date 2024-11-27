@@ -42,12 +42,9 @@ public class ExceptionHandlers {
 		return ApiResponse.of(e.getMessage(), HttpStatus.FORBIDDEN);
 	}
 
-	@ExceptionHandler(value = {
-			ApiBusinessException.class,
-			DomainException.class
-	})
+	@ExceptionHandler
 	@ResponseStatus(code = HttpStatus.BAD_REQUEST)
-	public ResponseEntity<ApiResponse<List<String>>> handle(RuntimeException e) {
+	public ResponseEntity<ApiResponse<List<String>>> handle(ApiBusinessException e) {
 		return ApiResponse.of(List.of(e.getMessage()), HttpStatus.BAD_REQUEST);
 	}
 	

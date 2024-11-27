@@ -5,7 +5,6 @@ import com.cp.classpay.entity.*;
 import com.cp.classpay.repository.*;
 import com.cp.classpay.utils.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -16,10 +15,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BookingCacheService {
 
-    @Autowired
-    private BookingRepo bookingRepo;
-    @Autowired
-    private RedisUtil redisUtil;
+    private final BookingRepo bookingRepo;
+    private final RedisUtil redisUtil;
+
+    public BookingCacheService(BookingRepo bookingRepo, RedisUtil redisUtil) {
+        this.bookingRepo = bookingRepo;
+        this.redisUtil = redisUtil;
+    }
 
     @Value("${app.redis.booking_e.key_prefix}")
     private String booking_e_key_prefix;
@@ -31,7 +33,8 @@ public class BookingCacheService {
     @Value("${app.redis.booked_booking_list_by_user_id.key_ttl}")
     private long booked_booking_list_by_user_id_key_ttl;
 
-   public Booking save(Booking booking) {
+
+    public Booking save(Booking booking) {
         Booking record = bookingRepo.save(booking);
 
         String key = booking_e_key_prefix + record.getBookingId();
